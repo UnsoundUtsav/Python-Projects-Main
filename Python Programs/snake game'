@@ -1,0 +1,95 @@
+import pygame
+import random
+
+# Initialize pygame
+pygame.init()
+
+# Screen settings
+WIDTH, HEIGHT = 600, 400
+CELL = 20
+
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Snake Game")
+
+clock = pygame.time.Clock()
+font = pygame.font.SysFont(None, 30)
+
+# Colors
+BLACK = (20, 20, 20)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
+WHITE = (255, 255, 255)
+
+# Snake
+snake = [(100, 100)]
+direction = (CELL, 0)
+
+# Food
+food = (
+    random.randrange(0, WIDTH, CELL),
+    random.randrange(0, HEIGHT, CELL)
+)
+
+score = 0
+running = True
+
+while running:
+    clock.tick(10)
+
+    # Events
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP and direction != (0, CELL):
+                direction = (0, -CELL)
+            elif event.key == pygame.K_DOWN and direction != (0, -CELL):
+                direction = (0, CELL)
+            elif event.key == pygame.K_LEFT and direction != (CELL, 0):
+                direction = (-CELL, 0)
+            elif event.key == pygame.K_RIGHT and direction != (-CELL, 0):
+                direction = (CELL, 0)
+
+    # Move snake
+    head = (
+        snake[0][0] + direction[0],
+        snake[0][1] + direction[1]
+    )
+    snake.insert(0, head)
+
+    # Eat food
+    if head == food:
+        score += 1
+        food = (
+            random.randrange(0, WIDTH, CELL),
+            random.randrange(0, HEIGHT, CELL)
+        )
+    else:
+        snake.pop()
+
+    # Collision with wall
+    if (
+        head[0] < 0 or head[0] >= WIDTH or
+        head[1] < 0 or head[1] >= HEIGHT
+    ):
+        running = False
+
+    # Collision with itself
+    if head in snake[1:]:
+        running = False
+
+    # Draw
+    screen.fill(BLACK)
+
+    pygame.draw.rect(screen, RED, (*food, CELL, CELL))
+
+    for segment in snake:
+        pygame.draw.rect(screen, GREEN, (*segment, CELL, CELL))
+
+    text = font.render(f"Score: {score}", True, WHITE)
+    screen.blit(text, (10, 10))
+
+    pygame.display.flip()
+
+pygame.quit()
